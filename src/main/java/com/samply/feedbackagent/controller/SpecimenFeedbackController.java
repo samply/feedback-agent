@@ -43,9 +43,7 @@ public class SpecimenFeedbackController {
         specimenFeedback.setType(specimenFeedbackDetails.getType());
         specimenFeedback.setPublicationReference(specimenFeedbackDetails.getPublicationReference());
 
-        SpecimenFeedback updatedSpecimenFeedback = specimenFeedbackRepository.save(specimenFeedback);
-
-        return updatedSpecimenFeedback;
+        return specimenFeedbackRepository.save(specimenFeedback);
     }
 
     // Delete a SpecimenFeedback
