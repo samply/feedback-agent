@@ -3,10 +3,15 @@ import com.samply.feedbackagent.repository.SpecimenFeedbackRepository;
 import com.samply.feedbackagent.exception.SpecimenFeedbackNotFoundException;
 import com.samply.feedbackagent.model.SpecimenFeedback;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
 import jakarta.validation.Valid;
 import java.util.List;
+
+import static org.springframework.data.domain.ExampleMatcher.GenericPropertyMatchers.exact;
+
 @RestController
 public class SpecimenFeedbackController {
     @Autowired
@@ -31,6 +36,12 @@ public class SpecimenFeedbackController {
                 .orElseThrow(() -> new SpecimenFeedbackNotFoundException(specimenFeedbackId));
     }
 
+    // Get SpecimenFeedbacks by request ID
+    @GetMapping("/specimen-feedback/find-by-request/{id}")
+    public List<SpecimenFeedback> getSpecimenFeedbackByRequestID(@PathVariable(value = "id") Long requestId) {
+        return specimenFeedbackRepository.findByRequest(requestId);
+    }
+
     // Update a SpecimenFeedback
     @PutMapping("/specimen-feedback/{id}")
     public SpecimenFeedback updateSpecimenFeedback(@PathVariable(value = "id") Long specimenFeedbackId,
@@ -40,6 +51,7 @@ public class SpecimenFeedbackController {
                 .orElseThrow(() -> new SpecimenFeedbackNotFoundException(specimenFeedbackId));
 
         specimenFeedback.setSpecimenID(specimenFeedbackDetails.getSpecimenID());
+        specimenFeedback.setRequestID(specimenFeedbackDetails.getRequestID());
         specimenFeedback.setType(specimenFeedbackDetails.getType());
         specimenFeedback.setPublicationReference(specimenFeedbackDetails.getPublicationReference());
 

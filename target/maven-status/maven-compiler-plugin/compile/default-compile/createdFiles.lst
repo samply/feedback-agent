@@ -1,5 +1,5 @@
 com\samply\feedbackagent\controller\SpecimenFeedbackController.class
-com\samply\feedbackagent\FeedbackAgentApplication.class
 com\samply\feedbackagent\exception\SpecimenFeedbackNotFoundException.class
 com\samply\feedbackagent\repository\SpecimenFeedbackRepository.class
+com\samply\feedbackagent\FeedbackAgentApplication.class
 com\samply\feedbackagent\model\SpecimenFeedback.class

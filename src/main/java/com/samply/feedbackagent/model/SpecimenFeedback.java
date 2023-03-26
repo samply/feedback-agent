@@ -11,6 +11,9 @@ public class SpecimenFeedback {
     @Column(name = "specimen_id")
     private long specimenID;
 
+    @Column(name = "request_id")
+    private long requestID;
+
     @Column(name = "type")
     private String type;
 
@@ -21,9 +24,10 @@ public class SpecimenFeedback {
         super();
     }
 
-    public SpecimenFeedback(long id, long specimenID, String type, String publicationReference) {
+    public SpecimenFeedback(long id, long specimenID, long requestID, String type, String publicationReference) {
         this.id = id;
         this.specimenID = specimenID;
+        this.requestID = requestID;
         this.type = type;
         this.publicationReference = publicationReference;
     }
@@ -42,6 +46,14 @@ public class SpecimenFeedback {
 
     public void setSpecimenID(long specimenID) {
         this.specimenID = specimenID;
+    }
+
+    public long getRequestID() {
+        return requestID;
+    }
+
+    public void setRequestID(long requestID) {
+        this.requestID = requestID;
     }
 
     public String getType() {
