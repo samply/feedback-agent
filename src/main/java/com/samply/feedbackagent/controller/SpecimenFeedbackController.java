@@ -45,6 +45,18 @@ public class SpecimenFeedbackController {
 
         return specimenFeedbackRepository.save(specimenFeedback);
     }
+    // Update a SpecimenFeedback
+    @PutMapping("/specimen-feedback/add-publication/{id}")
+    public SpecimenFeedback addPublicationReferenceSpecimenFeedback(@PathVariable(value = "id") Long specimenFeedbackId,
+                                                   @Valid @RequestBody SpecimenFeedback specimenFeedbackDetails) throws SpecimenFeedbackNotFoundException {
+
+        SpecimenFeedback specimenFeedback = specimenFeedbackRepository.findById(specimenFeedbackId)
+                .orElseThrow(() -> new SpecimenFeedbackNotFoundException(specimenFeedbackId));
+
+        specimenFeedback.setPublicationReference(specimenFeedbackDetails.getPublicationReference());
+
+        return specimenFeedbackRepository.save(specimenFeedback);
+    }
 
     // Delete a SpecimenFeedback
     @DeleteMapping("/specimen-feedback/{id}")
