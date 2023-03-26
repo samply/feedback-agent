@@ -12,28 +12,28 @@ public class SpecimenFeedbackController {
     @Autowired
     SpecimenFeedbackRepository specimenFeedbackRepository;
 
-    // Get All Notes
+    // Get All SpecimenFeedbacks
     @GetMapping("/specimen-feedback")
-    public List<SpecimenFeedback> getAllNotes() {
+    public List<SpecimenFeedback> getAllSpecimenFeedback() {
         return specimenFeedbackRepository.findAll();
     }
 
-    // Create a new Note
+    // Create a new SpecimenFeedback
     @PostMapping("/specimen-feedback")
-    public SpecimenFeedback createNote(@Valid @RequestBody SpecimenFeedback specimenFeedback) {
+    public SpecimenFeedback createSpecimenFeedback(@Valid @RequestBody SpecimenFeedback specimenFeedback) {
         return specimenFeedbackRepository.save(specimenFeedback);
     }
 
-    // Get a Single Note
+    // Get a Single SpecimenFeedback
     @GetMapping("/specimen-feedback/{id}")
-    public SpecimenFeedback getNoteById(@PathVariable(value = "id") Long specimenFeedbackId) throws SpecimenFeedbackNotFoundException {
+    public SpecimenFeedback getSpecimenFeedbackById(@PathVariable(value = "id") Long specimenFeedbackId) throws SpecimenFeedbackNotFoundException {
         return specimenFeedbackRepository.findById(specimenFeedbackId)
                 .orElseThrow(() -> new SpecimenFeedbackNotFoundException(specimenFeedbackId));
     }
 
-    // Update a Note
+    // Update a SpecimenFeedback
     @PutMapping("/specimen-feedback/{id}")
-    public SpecimenFeedback updateNote(@PathVariable(value = "id") Long specimenFeedbackId,
+    public SpecimenFeedback updateSpecimenFeedback(@PathVariable(value = "id") Long specimenFeedbackId,
                            @Valid @RequestBody SpecimenFeedback specimenFeedbackDetails) throws SpecimenFeedbackNotFoundException {
 
         SpecimenFeedback specimenFeedback = specimenFeedbackRepository.findById(specimenFeedbackId)
@@ -48,7 +48,7 @@ public class SpecimenFeedbackController {
         return updatedSpecimenFeedback;
     }
 
-    // Delete a Note
+    // Delete a SpecimenFeedback
     @DeleteMapping("/specimen-feedback/{id}")
     public ResponseEntity<?> deleteSpecimenFeedback(@PathVariable(value = "id") Long specimenFeedbackId) throws SpecimenFeedbackNotFoundException {
         SpecimenFeedback specimenFeedback = specimenFeedbackRepository.findById(specimenFeedbackId)
