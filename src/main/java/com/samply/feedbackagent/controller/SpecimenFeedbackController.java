@@ -58,7 +58,9 @@ public class SpecimenFeedbackController {
         SpecimenFeedback specimenFeedback = specimenFeedbackRepository.findById(specimenFeedbackId)
                 .orElseThrow(() -> new SpecimenFeedbackNotFoundException(specimenFeedbackId));
 
-        specimenFeedback.setSpecimenID(specimenFeedbackDetails.getSpecimenID());
+        specimenFeedback.setSampleID(specimenFeedbackDetails.getSampleID());
+        specimenFeedback.setPatientID(specimenFeedbackDetails.getPatientID());
+        specimenFeedback.setCollectionDate(specimenFeedbackDetails.getCollectionDate());
         specimenFeedback.setRequestID(specimenFeedbackDetails.getRequestID());
         specimenFeedback.setType(specimenFeedbackDetails.getType());
         specimenFeedback.setPublicationReference(specimenFeedbackDetails.getPublicationReference());

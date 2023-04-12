@@ -8,14 +8,20 @@ public class SpecimenFeedback {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private long id;
 
-    @Column(name = "specimen_id")
-    private long specimenID;
+    @Column(name = "sample_id")
+    private String sampleID;
 
     @Column(name = "request_id")
-    private long requestID;
+    private String requestID;
+
+    @Column(name = "patient_id")
+    private String patientID;
 
     @Column(name = "type")
     private String type;
+
+    @Column(name = "collection_date")
+    private String collectionDate;
 
     @Column(name = "publication_reference")
     private String publicationReference;
@@ -24,10 +30,12 @@ public class SpecimenFeedback {
         super();
     }
 
-    public SpecimenFeedback(long id, long specimenID, long requestID, String type, String publicationReference) {
+    public SpecimenFeedback(long id, String sampleID, String requestID, String patientID, String collectionDate, String type, String publicationReference) {
         this.id = id;
-        this.specimenID = specimenID;
+        this.sampleID = sampleID;
         this.requestID = requestID;
+        this.patientID = patientID;
+        this.collectionDate = collectionDate;
         this.type = type;
         this.publicationReference = publicationReference;
     }
@@ -40,19 +48,19 @@ public class SpecimenFeedback {
         this.id = id;
     }
 
-    public long getSpecimenID() {
-        return specimenID;
+    public String getSampleID() {
+        return sampleID;
     }
 
-    public void setSpecimenID(long specimenID) {
-        this.specimenID = specimenID;
+    public void setSampleID(String specimenID) {
+        this.sampleID = specimenID;
     }
 
-    public long getRequestID() {
+    public String getRequestID() {
         return requestID;
     }
 
-    public void setRequestID(long requestID) {
+    public void setRequestID(String requestID) {
         this.requestID = requestID;
     }
 
@@ -66,6 +74,22 @@ public class SpecimenFeedback {
 
     public String getPublicationReference() {
         return publicationReference;
+    }
+
+    public String getPatientID() {
+        return patientID;
+    }
+
+    public void setPatientID(String patientID) {
+        this.patientID = patientID;
+    }
+
+    public String getCollectionDate() {
+        return collectionDate;
+    }
+
+    public void setCollectionDate(String collectionDate) {
+        this.collectionDate = collectionDate;
     }
 
     public void setPublicationReference(String publicationReference) {
