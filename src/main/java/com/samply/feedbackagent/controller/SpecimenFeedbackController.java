@@ -14,7 +14,7 @@ public class SpecimenFeedbackController {
     @Autowired
     SpecimenFeedbackRepository specimenFeedbackRepository;
 
-    // Get All SpecimenFeedbacks
+    // Get all SpecimenFeedback
     @CrossOrigin(origins = "http://localhost:9000")
     @GetMapping("/specimen-feedback")
     public List<SpecimenFeedback> getAllSpecimenFeedback() {
