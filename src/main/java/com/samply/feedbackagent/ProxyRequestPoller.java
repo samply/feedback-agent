@@ -15,7 +15,8 @@ public class ProxyRequestPoller extends Thread {
 
     public ProxyRequestPoller(int sleepTime) {
         this.httpClient = HttpClients.createDefault();
-        this.httpGet = new HttpGet(System.getenv("BEAM_PROXY_URI") + "/v1/tasks?to=app1.proxy2.broker&wait_count=1");
+        this.httpGet = new HttpGet(System.getenv("BEAM_PROXY_URI") + "/v1/tasks?to=app1.proxy2.broker&wait_count=1&filter=todo");
+        this.httpGet.setHeader("Authorization", "ApiKey app1.proxy2.broker App1Secret");
         this.sleepTime = sleepTime;
     }
 
@@ -26,6 +27,7 @@ public class ProxyRequestPoller extends Thread {
                 HttpResponse response = httpClient.execute(httpGet);
                 int statusCode = response.getStatusLine().getStatusCode();
                 if (statusCode == 200) {
+                    System.out.println("status code: " + statusCode);
                     BufferedReader reader = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
                     StringBuilder responseBuilder = new StringBuilder();
                     String line;

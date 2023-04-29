@@ -13,7 +13,7 @@ services:
     depends_on:
       - feedback-agent-db
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/compose-postgres
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://feedback-agent-db:5432/compose-postgres
       - SPRING_DATASOURCE_USERNAME=compose-postgres
       - SPRING_DATASOURCE_PASSWORD=compose-postgres
       - SPRING_JPA_HIBERNATE_DDL_AUTO=update
@@ -26,8 +26,8 @@ services:
     container_name: feedback-agent-db
     expose:
       - 5432
-    ports:
-      - 5432:5432
+    #ports:
+    #  - 5432:5432
     environment:
       - POSTGRES_USER=compose-postgres
       - POSTGRES_PASSWORD=compose-postgres
