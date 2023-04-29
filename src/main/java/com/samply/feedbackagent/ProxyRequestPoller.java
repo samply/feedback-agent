@@ -9,9 +9,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 
 public class ProxyRequestPoller extends Thread {
-    private HttpClient httpClient;
-    private HttpGet httpGet;
-    private int sleepTime;
+    private final HttpClient httpClient;
+    private final HttpGet httpGet;
+    private final int sleepTime;
 
     public ProxyRequestPoller(int sleepTime) {
         this.httpClient = HttpClients.createDefault();
