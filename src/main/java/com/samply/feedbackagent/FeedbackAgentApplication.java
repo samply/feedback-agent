@@ -8,6 +8,7 @@ public class FeedbackAgentApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(FeedbackAgentApplication.class, args);
+		new ProxyRequestPoller(0).start();
 	}
 
 }
