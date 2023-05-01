@@ -1,6 +1,8 @@
+com/samply/feedbackagent/ProxyRequestPoller$1.class
 com/samply/feedbackagent/model/SpecimenFeedback.class
 com/samply/feedbackagent/controller/SpecimenFeedbackController.class
 com/samply/feedbackagent/exception/SpecimenFeedbackNotFoundException.class
+com/samply/feedbackagent/BeamResult.class
 com/samply/feedbackagent/model/SpecimenFeedbackDto.class
 com/samply/feedbackagent/ProxyRequestPoller.class
 com/samply/feedbackagent/FeedbackAgentApplication.class

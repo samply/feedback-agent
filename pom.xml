@@ -89,7 +89,6 @@
 			<artifactId>fernet-java8</artifactId>
 			<version>1.4.2</version>
 		</dependency>
-
 	</dependencies>
 
 	<build>

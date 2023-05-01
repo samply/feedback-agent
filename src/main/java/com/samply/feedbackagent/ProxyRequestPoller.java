@@ -70,19 +70,36 @@ public class ProxyRequestPoller extends Thread {
                     List<SpecimenFeedback> specimenFeedbacks = specimenFeedbackService.getSpecimenFeedbackByRequestID(requestId);
                     if (!specimenFeedbacks.isEmpty()) {
                         String token = getReferenceToken(accessCode);
-                        System.out.println(token);
                         Key keyObj = new Key(key);
                         final Validator<String> validator = new StringValidator() {};
                         Token tokenObj = Token.fromString(token);
                         String reference = tokenObj.validateAndDecrypt(keyObj, validator);
                         specimenFeedbackService.addPublicationReferenceToSpecimenFeedback(specimenFeedbacks, reference);
-                        System.out.println("Successfully updated publicationReference");
+                        System.out.println("Successfully updated publication reference");
 
-                        //todo 3 let hub know to delete the entry for this agent
+                        /*BeamResult result = new BeamResult();
+                        result.setFrom("app1.proxy2.broker");
+                        List to = new LinkedList<String>();
+                        to.add(responseObject.getString("from"));
+                        result.setTo(to);
+                        result.setTask(UUID.fromString(responseObject.getString("id")));
+                        result.setStatus("succeeded");
+                        result.setBody("PublicationReference successfully obtained");
+                        result.setMetadata("-");
+                        System.out.println(sendBeamResult(result));*/
                     } else {
-                        //todo 3 let hub know to delete the entry for this agent
-                        //log something
+                        System.out.println("RequestId of publication reference does not match any of saved Specimen RequestIds");
                     }
+                    BeamResult result = new BeamResult();
+                    result.setFrom("app1.proxy2.broker");
+                    List to = new LinkedList<String>();
+                    to.add(responseObject.getString("from"));
+                    result.setTo(to);
+                    result.setTask(UUID.fromString(responseObject.getString("id")));
+                    result.setStatus("succeeded");
+                    result.setBody("PublicationReference obtained");
+                    result.setMetadata("-");
+                    System.out.println(sendBeamResult(result));
                 }
             }
         }
@@ -102,29 +119,19 @@ public class ProxyRequestPoller extends Thread {
             return null;
         }
     }
-    /*private void sendResult(String from, List<String> to, String taskId, String status, String body) throws IOException {
-        HttpPut httpPut = new HttpPut(System.getenv("BEAM_PROXY_URI") + "/v1/tasks/" + taskId + "/results/app1.proxy2.broker");
-        httpPut.setHeader("Authorization", "ApiKey app1.proxy2.broker App1Secret");
+    private ResponseEntity<String> sendBeamResult(BeamResult result) {
+        final String request_uri = System.getenv("BEAM_PROXY_URI") + "/v1/tasks/" + result.getTask() + "/results/app1.proxy2.broker";
+        RestTemplate restTemplate = new RestTemplate();
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", "ApiKey app1.proxy2.broker App1Secret");
+        HttpEntity<Map<String, Object>> request = new HttpEntity<>(result.buildMap(), headers);
 
-        Map<String, Object> jsonMap = new HashMap<>();
-        jsonMap.put("from", from);
-        jsonMap.put("to", to);
-        jsonMap.put("task", taskId);
-        jsonMap.put("status", status);
-        jsonMap.put("metadata", null);
-        if (body != null) {
-            jsonMap.put("body", body);
-        }
-
-        String requestBody = new ObjectMapper().writeValueAsString(jsonMap);
-        httpPut.setEntity(new StringEntity(requestBody, ContentType.APPLICATION_JSON));
-
-        HttpResponse response = httpClient.execute(httpPut);
-        int statusCode = response.getStatusLine().getStatusCode();
-        if (statusCode == 201) {
-            System.out.println("Task " + taskId + " claimed");
+        ResponseEntity<String> response = restTemplate.exchange(request_uri, HttpMethod.PUT, request, String.class);
+        if (response.getStatusCode() == HttpStatus.CREATED) {
+            return response;
         } else {
-            System.out.println("Error claiming task " + taskId + ". Status code: " + statusCode + " " + response);
+            System.out.println("Could not update beam task");
+            return null;
         }
-    }*/
+    }
 }
