@@ -1,6 +1,8 @@
-com\samply\feedbackagent\controller\SpecimenFeedbackController.class
-com\samply\feedbackagent\FeedbackAgentApplication.class
-com\samply\feedbackagent\exception\SpecimenFeedbackNotFoundException.class
-com\samply\feedbackagent\repository\SpecimenFeedbackRepository.class
-com\samply\feedbackagent\model\SpecimenFeedbackDto.class
-com\samply\feedbackagent\model\SpecimenFeedback.class
+com/samply/feedbackagent/model/SpecimenFeedback.class
+com/samply/feedbackagent/controller/SpecimenFeedbackController.class
+com/samply/feedbackagent/exception/SpecimenFeedbackNotFoundException.class
+com/samply/feedbackagent/model/SpecimenFeedbackDto.class
+com/samply/feedbackagent/ProxyRequestPoller.class
+com/samply/feedbackagent/FeedbackAgentApplication.class
+com/samply/feedbackagent/service/SpecimenFeedbackService.class
+com/samply/feedbackagent/repository/SpecimenFeedbackRepository.class

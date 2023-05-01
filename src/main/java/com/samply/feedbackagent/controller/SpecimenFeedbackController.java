@@ -42,13 +42,6 @@ public class SpecimenFeedbackController {
                 .orElseThrow(() -> new SpecimenFeedbackNotFoundException(specimenFeedbackId));
     }
 
-    // Get SpecimenFeedbacks by request ID
-    @CrossOrigin(origins = "http://localhost:9000")
-    @GetMapping("/specimen-feedback/find-by-request/{id}")
-    public List<SpecimenFeedback> getSpecimenFeedbackByRequestID(@PathVariable(value = "id") Long requestId) {
-        return specimenFeedbackRepository.findByRequest(requestId);
-    }
-
     // Update a SpecimenFeedback
     @CrossOrigin(origins = "http://localhost:9000")
     @PutMapping("/specimen-feedback/{id}")
