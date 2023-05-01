@@ -86,7 +86,7 @@ public class ProxyRequestPoller extends Thread {
         }
     }
     private String getReferenceToken(String referenceCode) {
-        final String request_uri = System.getenv("FEEDBACK_HUB_URI") + "/referenceToken/" + referenceCode; //todo 1 aj v hube treba
+        final String request_uri = System.getenv("FEEDBACK_HUB_URL") + "/reference-token/" + referenceCode; //todo 1 aj v hube treba
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
         //todo 4? //headers.set("x-api-key", "secretKey");
