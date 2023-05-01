@@ -69,12 +69,14 @@ public class ProxyRequestPoller extends Thread {
 
                     List<SpecimenFeedback> specimenFeedbacks = specimenFeedbackService.getSpecimenFeedbackByRequestID(requestId);
                     if (!specimenFeedbacks.isEmpty()) {
-                        String token = getReferenceToken(accessCode); //todo 1
+                        String token = getReferenceToken(accessCode);
                         System.out.println(token);
-                        /*Key keyObj = new Key(key); //todo 2
+                        Key keyObj = new Key(key);
                         final Validator<String> validator = new StringValidator() {};
                         Token tokenObj = Token.fromString(token);
-                        tokenObj.validateAndDecrypt(keyObj, validator);*/
+                        String reference = tokenObj.validateAndDecrypt(keyObj, validator);
+                        specimenFeedbackService.addPublicationReferenceToSpecimenFeedback(specimenFeedbacks, reference);
+                        System.out.println("Successfully updated publicationReference");
 
                         //todo 3 let hub know to delete the entry for this agent
                     } else {
@@ -86,7 +88,7 @@ public class ProxyRequestPoller extends Thread {
         }
     }
     private String getReferenceToken(String referenceCode) {
-        final String request_uri = System.getenv("FEEDBACK_HUB_URL") + "/reference-token/" + referenceCode; //todo 1 aj v hube treba
+        final String request_uri = System.getenv("FEEDBACK_HUB_URL") + "/reference-token/" + referenceCode;
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
         //todo 4? //headers.set("x-api-key", "secretKey");

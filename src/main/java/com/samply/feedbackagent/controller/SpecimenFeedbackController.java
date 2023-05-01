@@ -41,7 +41,7 @@ public class SpecimenFeedbackController {
         return specimenFeedbackRepository.findById(specimenFeedbackId)
                 .orElseThrow(() -> new SpecimenFeedbackNotFoundException(specimenFeedbackId));
     }
-
+    /*
     // Update a SpecimenFeedback
     @CrossOrigin(origins = "http://localhost:9000")
     @PutMapping("/specimen-feedback/{id}")
@@ -59,7 +59,7 @@ public class SpecimenFeedbackController {
         specimenFeedback.setPublicationReference(specimenFeedbackDetails.getPublicationReference());
 
         return specimenFeedbackRepository.save(specimenFeedback);
-    }
+    }*//*
     // Update a SpecimenFeedback
     @CrossOrigin(origins = "http://localhost:9000")
     @PutMapping("/specimen-feedback/add-publication/{id}")
@@ -73,7 +73,8 @@ public class SpecimenFeedbackController {
 
         return specimenFeedbackRepository.save(specimenFeedback);
     }
-
+    */
+    /*
     // Delete a SpecimenFeedback
     @CrossOrigin(origins = "http://localhost:9000")
     @DeleteMapping("/specimen-feedback/{id}")
@@ -84,5 +85,5 @@ public class SpecimenFeedbackController {
         specimenFeedbackRepository.delete(specimenFeedback);
 
         return ResponseEntity.ok().build();
-    }
+    }*/
 }
