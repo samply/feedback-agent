@@ -10,5 +10,5 @@ import java.util.List;
 @Repository
 public interface SpecimenFeedbackRepository extends JpaRepository<SpecimenFeedback, Long> {
     @Query(nativeQuery= true, value="SELECT * FROM specimen_feedback WHERE request_id = ?")
-    List<SpecimenFeedback> findByRequest(Long id);
+    List<SpecimenFeedback> findByRequest(String id);
 }
