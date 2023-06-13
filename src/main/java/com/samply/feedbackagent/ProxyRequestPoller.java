@@ -1,6 +1,7 @@
 package com.samply.feedbackagent;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.samply.feedbackagent.blaze.SpecimenExtensionUpdater;
 import com.samply.feedbackagent.model.SpecimenFeedback;
 import com.samply.feedbackagent.service.SpecimenFeedbackService;
 import org.apache.http.HttpResponse;
@@ -29,6 +30,7 @@ import java.util.*;
 @Service
 public class ProxyRequestPoller extends Thread {
     private final SpecimenFeedbackService specimenFeedbackService;
+    private SpecimenExtensionUpdater extensionUpdater;
 
     /*public ProxyRequestPoller(int sleepTime) {
         this.httpClient = HttpClients.createDefault();
@@ -41,6 +43,7 @@ public class ProxyRequestPoller extends Thread {
     }*/
     public ProxyRequestPoller(SpecimenFeedbackService specimenFeedbackService) {
         this.specimenFeedbackService = specimenFeedbackService;
+        this.extensionUpdater = new SpecimenExtensionUpdater("http://localhost:8091/fhir");
     }
     public void run() {
         while (true) {
@@ -76,6 +79,13 @@ public class ProxyRequestPoller extends Thread {
                         String reference = tokenObj.validateAndDecrypt(keyObj, validator);
                         specimenFeedbackService.addPublicationReferenceToSpecimenFeedback(specimenFeedbacks, reference);
                         System.out.println("Successfully updated publication reference");
+
+                        // propagate publication reference into blaze store
+                        List<String> sampleIds = new ArrayList<>();
+                        for (SpecimenFeedback specimenFeedback : specimenFeedbacks) {
+                            sampleIds.add(specimenFeedback.getSampleID());
+                        }
+                        extensionUpdater.updateSpecimenWithExtension(sampleIds, reference);
 
                         /*BeamResult result = new BeamResult();
                         result.setFrom("app1.proxy2.broker");
