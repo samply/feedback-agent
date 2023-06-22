@@ -27,8 +27,8 @@ public class SpecimenExtensionUpdater {
                 .execute();
 
         Extension extension = new Extension();
-        extension.setUrl(publicationRefUrl);
-        extension.setValue(new StringType("Publication reference"));
+        extension.setUrl("PublicationReference");
+        extension.setValue(new StringType(publicationRefUrl));
 
         // Iterate over the resources in the Bundle
         for (Bundle.BundleEntryComponent entry : bundle.getEntry()) {
