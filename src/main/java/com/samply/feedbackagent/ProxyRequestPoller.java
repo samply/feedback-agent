@@ -43,7 +43,7 @@ public class ProxyRequestPoller extends Thread {
     }*/
     public ProxyRequestPoller(SpecimenFeedbackService specimenFeedbackService) {
         this.specimenFeedbackService = specimenFeedbackService;
-        this.extensionUpdater = new SpecimenExtensionUpdater("http://192.168.1.201:8091/fhir");
+        this.extensionUpdater = new SpecimenExtensionUpdater(System.getenv("BLAZE_BASE_URL"));
     }
     public void run() {
         while (true) {

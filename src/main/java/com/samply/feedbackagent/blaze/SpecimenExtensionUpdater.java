@@ -27,7 +27,7 @@ public class SpecimenExtensionUpdater {
                 .execute();
 
         Extension extension = new Extension();
-        extension.setUrl("PublicationReference");
+        extension.setUrl("https://fhir.bbmri.de/StructureDefinition/PublicationReference");
         extension.setValue(new StringType(publicationRefUrl));
 
         // Iterate over the resources in the Bundle
@@ -55,8 +55,25 @@ public class SpecimenExtensionUpdater {
         }
         // Perform HTTP request to save the updated Bundle to the server
         IGenericClient client = fhirContext.newRestfulGenericClient(serverBase);
-        client.transaction()
+        Bundle responseBundle = client.transaction()
                 .withBundle(updatedBundle)
                 .execute();
+
+        // Check if the response bundle contains any errors
+        if (responseBundle.hasEntry() && responseBundle.getEntry().size() > 0) {
+            Bundle.BundleEntryComponent entry = responseBundle.getEntry().get(0);
+            if (entry.getResource() instanceof OperationOutcome) {
+                OperationOutcome operationOutcome = (OperationOutcome) entry.getResource();
+                if (operationOutcome.hasIssue() && operationOutcome.getIssue().size() > 0) {
+                    OperationOutcome.OperationOutcomeIssueComponent issue = operationOutcome.getIssue().get(0);
+                    // Process the error issue as needed
+                    String severity = issue.getSeverity().getDisplay();
+                    String code = issue.getCode().getDisplay();
+                    String details = issue.getDetails().getText();
+
+                    System.out.println("Error: Severity: " + severity + ", Code: " + code + ", Details: " + details);
+                }
+            }
+        }
     }
 }
