@@ -55,14 +55,9 @@
 </template>
 <script>
 // Importing http client
-//import Papa from 'papaparse';
 import axios from 'axios'
-//import { debug } from 'console'
 // Importing the table component
 import CheckboxTable from './components/CheckboxTable.vue'
-// import the styles
-//import 'vue-good-table/dist/vue-good-table.css'
-//import { VueGoodTable } from 'vue-good-table';
 
 export default {
   name: 'App',
@@ -153,56 +148,6 @@ export default {
 
       poll();
     },
-
-    /*fetchSpecimen() {
-      this.content.data = [],
-      this.parsed = false,
-      axios.defaults.headers['X-API-KEY'] = this.x_api_key;
-      axios.post("http://localhost:8092/request?query=" + this.query + "&query-format=FHIR_QUERY&template-id=" + this.exportTemplate + "&output-format=JSON")
-      .then(response => {
-        return new Promise((resolve) => {
-            setTimeout(() => {
-              resolve(response.data);
-            }, 5000);
-        })
-        .then(() => {
-          this.fetchJSON(response.data.responseUrl);
-        });
-      })
-    },
-    fetchJSON(JSONUrl) {
-      axios.defaults.headers['X-API-KEY'] = null;
-      axios({
-        url: JSONUrl,
-        method: 'GET',
-      }).then((response) => {
-        console.log(response);
-        this.file = response.data.Samples.map((sample) => ({
-          ...sample,
-          sampleID: sample.sampleID.replace('Specimen/', ''),
-        }));
-
-        if (this.file.length > 0) {
-          // Extract keys from the first object in the Samples array
-          this.fields = Object.keys(this.file[0]);
-        }
-      });
-    },*/
-    /*handleFileUpload( event ){
-        this.file = event.target.files[0];
-        this.parseFile();
-    },*/
-    /*parseFile(){
-        Papa.parse( this.file, {
-            header: true,
-            skipEmptyLines: true,
-            complete: function( results ){
-                this.content = results;
-                this.parsed = true;
-                console.log(this.content.data[0])
-            }.bind(this)
-        } );
-    },*/
     postSelected(){
       let postData = this.$refs.checkBoxTable.selected();
       postData.forEach((element) => {
@@ -218,23 +163,7 @@ export default {
             this.enableDangerAlert = true;
           }
       });
-      /*axios.get("http://localhost:8081/specimen-feedback")
-      .then(response => {
-          console.log(response.data)
-      });*/
     }
-  },
-  /*computed: {
-    fields() {
-      if (this.file.length > 0) {
-        // Extract keys from the first object in the Samples array
-        return Object.keys(this.file[0]);
-      }
-      return [];
-    }
-  },*/
-  beforeUpdate: function() {
-      //this.enableSubmit = this.$refs.checkBoxTable.selected.length === 0;
   },
 }
 </script>
