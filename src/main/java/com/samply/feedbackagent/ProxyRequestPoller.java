@@ -35,9 +35,12 @@ public class ProxyRequestPoller extends Thread {
     private final SpecimenFeedbackService specimenFeedbackService;
     private final SpecimenExtensionUpdater extensionUpdater;
 
-    private static final String BEAM_PROXY_URI = System.getenv("BEAM_PROXY_URI") + "/v1/tasks?to=app1.proxy2.broker&wait_count=1&wait_time=10s&filter=todo";
-    private static final String BLAZE_BASE_URL = System.getenv("BLAZE_BASE_URL");
+    //private static final String BEAM_PROXY_URI = System.getenv("BEAM_PROXY_URI") + "/v1/tasks?to=app1.proxy2.broker&wait_count=1&wait_time=10s&filter=todo";
+    //private static final String BLAZE_BASE_URL = System.getenv("BLAZE_BASE_URL");
     private static final String FEEDBACK_HUB_URL = System.getenv("FEEDBACK_HUB_URL") + "/reference-token/";
+    private static final String BEAM_PROXY_URI = System.getenv("BEAM_PROXY_URI") + "/v1/tasks?to=" + System.getenv("PROXY_ID") + "&wait_count=1&wait_time=10s&filter=todo";
+    private static final String BLAZE_BASE_URL = System.getenv("BLAZE_BASE_URL");
+    private static final String APP1_SECRET = System.getenv("APP1_SECRET");
     /**
      * Constructs a new ProxyRequestPoller with the provided SpecimenFeedbackService.
      *
@@ -57,7 +60,8 @@ public class ProxyRequestPoller extends Thread {
                 RestTemplate restTemplate = new RestTemplate();
 
                 HttpHeaders headers = new HttpHeaders();
-                headers.set("Authorization", "ApiKey app1.proxy2.broker App1Secret");
+                headers.set("Authorization", "ApiKey " + System.getenv("PROXY_ID") + " " + APP1_SECRET);
+                //headers.set("Authorization", "ApiKey app1.proxy2.broker App1Secret");
                 HttpEntity<String> request = new HttpEntity<>(null, headers);
 
                 ResponseEntity<String> response = restTemplate.exchange(BEAM_PROXY_URI, HttpMethod.GET, request, String.class);
@@ -139,10 +143,12 @@ public class ProxyRequestPoller extends Thread {
      * @return The ResponseEntity representing the response.
      */
     private ResponseEntity<String> sendBeamResult(BeamResult result) {
-        final String request_uri = System.getenv("BEAM_PROXY_URI") + "/v1/tasks/" + result.getTask() + "/results/app1.proxy2.broker";
+        final String request_uri = System.getenv("BEAM_PROXY_URI") + "/v1/tasks/" + result.getTask() + "/results/" + System.getenv("PROXY_ID");
+        //final String request_uri = System.getenv("BEAM_PROXY_URI") + "/v1/tasks/" + result.getTask() + "/results/app1.proxy2.broker";
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "ApiKey app1.proxy2.broker App1Secret");
+        headers.set("Authorization", "ApiKey " + System.getenv("PROXY_ID") + " " + APP1_SECRET);
+        //headers.set("Authorization", "ApiKey app1.proxy2.broker App1Secret");
         HttpEntity<Map<String, Object>> request = new HttpEntity<>(result.buildMap(), headers);
 
         ResponseEntity<String> response = restTemplate.exchange(request_uri, HttpMethod.PUT, request, String.class);

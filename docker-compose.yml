@@ -20,6 +20,8 @@ services:
       - BEAM_PROXY_URI=http://dev-proxy2-1:8082
       - FEEDBACK_HUB_URL=http://feedback-hub-be:8071
       - BLAZE_BASE_URL=http://teiler-docker_blaze_1:8080/fhir
+      - APP1_SECRET=App1Secret
+      - PROXY_ID=app1.proxy2.broker
     networks:
       - teiler
       - outer
