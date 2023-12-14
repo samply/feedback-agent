@@ -26,109 +26,118 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.*;
-
+/**
+ * This class represents a thread that continuously polls for proxy requests,
+ * processes them, and updates the relevant data.
+ */
 @Service
 public class ProxyRequestPoller extends Thread {
     private final SpecimenFeedbackService specimenFeedbackService;
-    private SpecimenExtensionUpdater extensionUpdater;
+    private final SpecimenExtensionUpdater extensionUpdater;
 
-    /*public ProxyRequestPoller(int sleepTime) {
-        this.httpClient = HttpClients.createDefault();
-        this.httpGet = new HttpGet(System.getenv("BEAM_PROXY_URI") + "/v1/tasks?to=app1.proxy2.broker&wait_count=1&wait_time=10s&filter=todo");
-        this.httpGet.setHeader("Authorization", "ApiKey app1.proxy2.broker App1Secret");
-        this.sleepTime = sleepTime;
-        this.objectMapper = new ObjectMapper();
-
-        this.specimenFeedbackService = new SpecimenFeedbackService();
-    }*/
+    private static final String BEAM_PROXY_URI = System.getenv("BEAM_PROXY_URI") + "/v1/tasks?to=app1.proxy2.broker&wait_count=1&wait_time=10s&filter=todo";
+    private static final String BLAZE_BASE_URL = System.getenv("BLAZE_BASE_URL");
+    private static final String FEEDBACK_HUB_URL = System.getenv("FEEDBACK_HUB_URL") + "/reference-token/";
+    /**
+     * Constructs a new ProxyRequestPoller with the provided SpecimenFeedbackService.
+     *
+     * @param specimenFeedbackService The service for handling specimen feedback.
+     */
     public ProxyRequestPoller(SpecimenFeedbackService specimenFeedbackService) {
         this.specimenFeedbackService = specimenFeedbackService;
-        this.extensionUpdater = new SpecimenExtensionUpdater(System.getenv("BLAZE_BASE_URL"));
+        this.extensionUpdater = new SpecimenExtensionUpdater(BLAZE_BASE_URL);
     }
+    /**
+     * The main run method of the thread that continuously polls for proxy requests,
+     * processes them, and updates the relevant data.
+     */
     public void run() {
-        while (true) {
-            final String request_uri = System.getenv("BEAM_PROXY_URI") + "/v1/tasks?to=app1.proxy2.broker&wait_count=1&wait_time=10s&filter=todo";
-            RestTemplate restTemplate = new RestTemplate();
+        while (!Thread.currentThread().isInterrupted()) {
+            try {
+                RestTemplate restTemplate = new RestTemplate();
 
-            HttpHeaders headers = new HttpHeaders();
-            headers.set("Authorization", "ApiKey app1.proxy2.broker App1Secret");
-            HttpEntity<String> request = new HttpEntity<>(null, headers);
+                HttpHeaders headers = new HttpHeaders();
+                headers.set("Authorization", "ApiKey app1.proxy2.broker App1Secret");
+                HttpEntity<String> request = new HttpEntity<>(null, headers);
 
-            ResponseEntity<String> response = restTemplate.exchange(request_uri, HttpMethod.GET, request, String.class);
+                ResponseEntity<String> response = restTemplate.exchange(BEAM_PROXY_URI, HttpMethod.GET, request, String.class);
 
-            System.out.println(response);
+                System.out.println(response);
 
-            if (response.getStatusCode() == HttpStatus.OK) {
-                String responseBody = response.getBody();
-                JSONArray responseArray = new JSONArray(responseBody);
-                if (responseArray.length() > 0) {
-                    JSONObject responseObject = responseArray.getJSONObject(0);
-                    String body = responseObject.getString("body");
-                    JSONObject bodyObject = new JSONObject(body);
+                if (response.getStatusCode() == HttpStatus.OK) {
+                    String responseBody = response.getBody();
+                    JSONArray responseArray = new JSONArray(responseBody);
+                    if (responseArray.length() > 0) {
+                        JSONObject responseObject = responseArray.getJSONObject(0);
+                        String body = responseObject.getString("body");
+                        JSONObject bodyObject = new JSONObject(body);
 
-                    String requestId = bodyObject.getString("requestId");
-                    String accessCode = bodyObject.getString("accessCode");
-                    String key = bodyObject.getString("key");
+                        String requestId = bodyObject.getString("requestId");
+                        String accessCode = bodyObject.getString("accessCode");
+                        String key = bodyObject.getString("key");
 
-                    List<SpecimenFeedback> specimenFeedbacks = specimenFeedbackService.getSpecimenFeedbackByRequestID(requestId);
-                    if (!specimenFeedbacks.isEmpty()) {
-                        String token = getReferenceToken(accessCode);
-                        Key keyObj = new Key(key);
-                        final Validator<String> validator = new StringValidator() {};
-                        Token tokenObj = Token.fromString(token);
-                        String reference = tokenObj.validateAndDecrypt(keyObj, validator);
-                        specimenFeedbackService.addPublicationReferenceToSpecimenFeedback(specimenFeedbacks, reference);
-                        System.out.println("Successfully updated publication reference");
+                        List<SpecimenFeedback> specimenFeedbacks = specimenFeedbackService.getSpecimenFeedbackByRequestID(requestId);
+                        if (!specimenFeedbacks.isEmpty()) {
+                            String token = getReferenceToken(accessCode);
+                            Key keyObj = new Key(key);
+                            final Validator<String> validator = new StringValidator() {};
+                            Token tokenObj = Token.fromString(token);
+                            String reference = tokenObj.validateAndDecrypt(keyObj, validator);
+                            specimenFeedbackService.addPublicationReferenceToSpecimenFeedback(specimenFeedbacks, reference);
+                            System.out.println("Successfully updated publication reference");
 
-                        // propagate publication reference into blaze store
-                        List<String> sampleIds = new ArrayList<>();
-                        for (SpecimenFeedback specimenFeedback : specimenFeedbacks) {
-                            sampleIds.add(specimenFeedback.getSampleID());
+                            // propagate publication reference into blaze store
+                            List<String> sampleIds = new ArrayList<>();
+                            for (SpecimenFeedback specimenFeedback : specimenFeedbacks) {
+                                sampleIds.add(specimenFeedback.getSampleID());
+                            }
+                            extensionUpdater.updateSpecimenWithExtension(sampleIds, reference);
+                        } else {
+                            System.out.println("RequestId of publication reference does not match any of saved Specimen RequestIds");
                         }
-                        extensionUpdater.updateSpecimenWithExtension(sampleIds, reference);
-
-                        /*BeamResult result = new BeamResult();
+                        BeamResult result = new BeamResult();
                         result.setFrom("app1.proxy2.broker");
                         List to = new LinkedList<String>();
                         to.add(responseObject.getString("from"));
                         result.setTo(to);
                         result.setTask(UUID.fromString(responseObject.getString("id")));
                         result.setStatus("succeeded");
-                        result.setBody("PublicationReference successfully obtained");
+                        result.setBody("PublicationReference obtained");
                         result.setMetadata("-");
-                        System.out.println(sendBeamResult(result));*/
-                    } else {
-                        System.out.println("RequestId of publication reference does not match any of saved Specimen RequestIds");
+                        System.out.println(sendBeamResult(result));
                     }
-                    BeamResult result = new BeamResult();
-                    result.setFrom("app1.proxy2.broker");
-                    List to = new LinkedList<String>();
-                    to.add(responseObject.getString("from"));
-                    result.setTo(to);
-                    result.setTask(UUID.fromString(responseObject.getString("id")));
-                    result.setStatus("succeeded");
-                    result.setBody("PublicationReference obtained");
-                    result.setMetadata("-");
-                    System.out.println(sendBeamResult(result));
                 }
+            } catch (Exception e) {
+                System.out.println("IOException occurred: " + e.getMessage());
             }
         }
     }
+    /**
+     * Retrieves a reference token for a given reference code.
+     *
+     * @param referenceCode The reference code for which to obtain a token.
+     * @return The reference token.
+     */
     private String getReferenceToken(String referenceCode) {
-        final String request_uri = System.getenv("FEEDBACK_HUB_URL") + "/reference-token/" + referenceCode;
+        final String request_uri = FEEDBACK_HUB_URL + referenceCode;
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
-        //todo 4? //headers.set("x-api-key", "secretKey");
         HttpEntity<String> request = new HttpEntity<>(null, headers);
         ResponseEntity<String> response = restTemplate.exchange(request_uri, HttpMethod.GET, request, String.class);
         if (response.getStatusCode() == HttpStatus.OK) {
             String responseBody = response.getBody();
             return responseBody;
         } else {
-            //log something
+            System.out.println("Reference token not obtained");
             return null;
         }
     }
+    /**
+     * Sends a BeamResult to update the status of a proxy request.
+     *
+     * @param result The BeamResult to send.
+     * @return The ResponseEntity representing the response.
+     */
     private ResponseEntity<String> sendBeamResult(BeamResult result) {
         final String request_uri = System.getenv("BEAM_PROXY_URI") + "/v1/tasks/" + result.getTask() + "/results/app1.proxy2.broker";
         RestTemplate restTemplate = new RestTemplate();

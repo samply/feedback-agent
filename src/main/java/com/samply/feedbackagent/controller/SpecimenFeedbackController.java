@@ -41,49 +41,4 @@ public class SpecimenFeedbackController {
         return specimenFeedbackRepository.findById(specimenFeedbackId)
                 .orElseThrow(() -> new SpecimenFeedbackNotFoundException(specimenFeedbackId));
     }
-    /*
-    // Update a SpecimenFeedback
-    @CrossOrigin(origins = "http://localhost:9000")
-    @PutMapping("/specimen-feedback/{id}")
-    public SpecimenFeedback updateSpecimenFeedback(@PathVariable(value = "id") Long specimenFeedbackId,
-                           @Valid @RequestBody SpecimenFeedback specimenFeedbackDetails) throws SpecimenFeedbackNotFoundException {
-
-        SpecimenFeedback specimenFeedback = specimenFeedbackRepository.findById(specimenFeedbackId)
-                .orElseThrow(() -> new SpecimenFeedbackNotFoundException(specimenFeedbackId));
-
-        specimenFeedback.setSampleID(specimenFeedbackDetails.getSampleID());
-        specimenFeedback.setPatientID(specimenFeedbackDetails.getPatientID());
-        specimenFeedback.setCollectionDate(specimenFeedbackDetails.getCollectionDate());
-        specimenFeedback.setRequestID(specimenFeedbackDetails.getRequestID());
-        specimenFeedback.setType(specimenFeedbackDetails.getType());
-        specimenFeedback.setPublicationReference(specimenFeedbackDetails.getPublicationReference());
-
-        return specimenFeedbackRepository.save(specimenFeedback);
-    }*//*
-    // Update a SpecimenFeedback
-    @CrossOrigin(origins = "http://localhost:9000")
-    @PutMapping("/specimen-feedback/add-publication/{id}")
-    public SpecimenFeedback addPublicationReferenceSpecimenFeedback(@PathVariable(value = "id") Long specimenFeedbackId,
-                                                   @Valid @RequestBody SpecimenFeedback specimenFeedbackDetails) throws SpecimenFeedbackNotFoundException {
-
-        SpecimenFeedback specimenFeedback = specimenFeedbackRepository.findById(specimenFeedbackId)
-                .orElseThrow(() -> new SpecimenFeedbackNotFoundException(specimenFeedbackId));
-
-        specimenFeedback.setPublicationReference(specimenFeedbackDetails.getPublicationReference());
-
-        return specimenFeedbackRepository.save(specimenFeedback);
-    }
-    */
-    /*
-    // Delete a SpecimenFeedback
-    @CrossOrigin(origins = "http://localhost:9000")
-    @DeleteMapping("/specimen-feedback/{id}")
-    public ResponseEntity<?> deleteSpecimenFeedback(@PathVariable(value = "id") Long specimenFeedbackId) throws SpecimenFeedbackNotFoundException {
-        SpecimenFeedback specimenFeedback = specimenFeedbackRepository.findById(specimenFeedbackId)
-                .orElseThrow(() -> new SpecimenFeedbackNotFoundException(specimenFeedbackId));
-
-        specimenFeedbackRepository.delete(specimenFeedback);
-
-        return ResponseEntity.ok().build();
-    }*/
 }

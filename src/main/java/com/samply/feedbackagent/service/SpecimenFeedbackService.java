@@ -16,8 +16,6 @@ import java.util.List;
 @Service
 public class SpecimenFeedbackService {
 
-    /*@Autowired
-    private SpecimenFeedbackRepository specimenFeedbackRepository;*/
     private final SpecimenFeedbackRepository specimenFeedbackRepository;
 
     public SpecimenFeedbackService(SpecimenFeedbackRepository specimenFeedbackRepository) {

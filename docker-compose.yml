@@ -17,11 +17,11 @@ services:
       - SPRING_DATASOURCE_USERNAME=compose-postgres
       - SPRING_DATASOURCE_PASSWORD=compose-postgres
       - SPRING_JPA_HIBERNATE_DDL_AUTO=update
-      - BEAM_PROXY_URI=http://192.168.0.109:8082
-      - FEEDBACK_HUB_URL=http://192.168.0.109:8071
-      - BLAZE_BASE_URL=http://192.168.0.100:8091/fhir
+      - BEAM_PROXY_URI=http://dev-proxy2-1:8082
+      - FEEDBACK_HUB_URL=http://feedback-hub-be:8071
+      - BLAZE_BASE_URL=http://teiler-docker_blaze_1:8080/fhir
     networks:
-      - teiler-ui
+      - teiler
       - outer
           
   feedback-agent-db:
@@ -35,16 +35,18 @@ services:
       - POSTGRES_USER=compose-postgres
       - POSTGRES_PASSWORD=compose-postgres
     networks:
-      - teiler-ui
+      - teiler
   feedback-agent-ui:
     build:
       context: ./frontend
       dockerfile: Dockerfile_fba
     ports:
-      - "8090:8090"
+      - "8096:8096"  
+    networks:
+      - teiler
       
 networks:
-  teiler-ui:
-    name: "teiler-ui"
+  teiler:
+    name: "teiler"
   outer:
     name: "outer"
