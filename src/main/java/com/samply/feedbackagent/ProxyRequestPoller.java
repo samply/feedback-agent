@@ -114,6 +114,13 @@ public class ProxyRequestPoller extends Thread {
             } catch (Exception e) {
                 System.out.println("IOException occurred: " + e.getMessage());
             }
+
+            // Sleep for 60 seconds before polling again
+            try {
+                Thread.sleep(60000);
+            } catch (InterruptedException e) {
+                System.out.println("InterruptedException occurred: " + e.getMessage());
+            }
         }
     }
     /**
