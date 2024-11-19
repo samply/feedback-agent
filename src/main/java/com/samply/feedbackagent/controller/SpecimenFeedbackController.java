@@ -14,6 +14,13 @@ public class SpecimenFeedbackController {
     @Autowired
     SpecimenFeedbackRepository specimenFeedbackRepository;
 
+    // Check endpoint
+    @CrossOrigin(origins = "http://localhost:9000") // Sollte mit einem Umbegbungsvariabel ersetzt werden
+    @GetMapping("/info")
+    public String info() {
+        return "OK";
+    }
+
     // Get all SpecimenFeedback
     @CrossOrigin(origins = "http://localhost:9000")
     @GetMapping("/specimen-feedback")
