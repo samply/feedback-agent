@@ -1,17 +1,8 @@
 package com.samply.feedbackagent;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.samply.feedbackagent.blaze.SpecimenExtensionUpdater;
 import com.samply.feedbackagent.model.SpecimenFeedback;
 import com.samply.feedbackagent.service.SpecimenFeedbackService;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpPut;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.HttpClients;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.http.*;
@@ -22,10 +13,8 @@ import com.macasaet.fernet.StringValidator;
 import com.macasaet.fernet.Token;
 import com.macasaet.fernet.Validator;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.*;
+
 /**
  * This class represents a thread that continuously polls for proxy requests,
  * processes them, and updates the relevant data.
@@ -38,9 +27,9 @@ public class ProxyRequestPoller extends Thread {
     //private static final String BEAM_PROXY_URI = System.getenv("BEAM_PROXY_URI") + "/v1/tasks?to=app1.proxy2.broker&wait_count=1&wait_time=10s&filter=todo";
     //private static final String BLAZE_BASE_URL = System.getenv("BLAZE_BASE_URL");
     private static final String FEEDBACK_HUB_URL = System.getenv("FEEDBACK_HUB_URL") + "/reference-token/";
-    private static final String BEAM_PROXY_URI = System.getenv("BEAM_PROXY_URI") + "/v1/tasks?to=" + System.getenv("PROXY_ID") + "&wait_count=1&wait_time=10s&filter=todo";
+    private static final String FEEDBACK_HUB_BEAM_TODO_URI = System.getenv("BEAM_PROXY_URI") + "/v1/tasks?to=" + System.getenv("FEEDBACK_HUB_BEAM_ID") + "&wait_count=1&wait_time=10s&filter=todo";
     private static final String BLAZE_BASE_URL = System.getenv("BLAZE_BASE_URL");
-    private static final String APP1_SECRET = System.getenv("APP1_SECRET");
+    private static final String FEEDBACK_HUB_SECRET = System.getenv("FEEDBACK_HUB_SECRET");
     /**
      * Constructs a new ProxyRequestPoller with the provided SpecimenFeedbackService.
      *
@@ -60,11 +49,11 @@ public class ProxyRequestPoller extends Thread {
                 RestTemplate restTemplate = new RestTemplate();
 
                 HttpHeaders headers = new HttpHeaders();
-                headers.set("Authorization", "ApiKey " + System.getenv("PROXY_ID") + " " + APP1_SECRET);
+                headers.set("Authorization", "ApiKey " + System.getenv("FEEDBACK_HUB_BEAM_ID") + " " + FEEDBACK_HUB_SECRET);
                 //headers.set("Authorization", "ApiKey app1.proxy2.broker App1Secret");
                 HttpEntity<String> request = new HttpEntity<>(null, headers);
 
-                ResponseEntity<String> response = restTemplate.exchange(BEAM_PROXY_URI, HttpMethod.GET, request, String.class);
+                ResponseEntity<String> response = restTemplate.exchange(FEEDBACK_HUB_BEAM_TODO_URI, HttpMethod.GET, request, String.class);
 
                 System.out.println(response);
 
@@ -150,11 +139,11 @@ public class ProxyRequestPoller extends Thread {
      * @return The ResponseEntity representing the response.
      */
     private ResponseEntity<String> sendBeamResult(BeamResult result) {
-        final String request_uri = System.getenv("BEAM_PROXY_URI") + "/v1/tasks/" + result.getTask() + "/results/" + System.getenv("PROXY_ID");
+        final String request_uri = System.getenv("BEAM_PROXY_URI") + "/v1/tasks/" + result.getTask() + "/results/" + System.getenv("FEEDBACK_HUB_BEAM_ID");
         //final String request_uri = System.getenv("BEAM_PROXY_URI") + "/v1/tasks/" + result.getTask() + "/results/app1.proxy2.broker";
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "ApiKey " + System.getenv("PROXY_ID") + " " + APP1_SECRET);
+        headers.set("Authorization", "ApiKey " + System.getenv("FEEDBACK_HUB_BEAM_ID") + " " + FEEDBACK_HUB_SECRET);
         //headers.set("Authorization", "ApiKey app1.proxy2.broker App1Secret");
         HttpEntity<Map<String, Object>> request = new HttpEntity<>(result.buildMap(), headers);
 

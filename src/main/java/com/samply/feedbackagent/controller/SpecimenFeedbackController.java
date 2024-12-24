@@ -13,6 +13,7 @@ import jakarta.validation.Valid;
 import java.util.List;
 
 @RestController
+@CrossOrigin(origins = "${cors.allowed.origins}") // get from environment variable CORS_ALLOWED_ORIGINS
 public class SpecimenFeedbackController {
     private static final Logger logger = LogManager.getLogger(SpecimenFeedbackController.class);
 
@@ -22,15 +23,21 @@ public class SpecimenFeedbackController {
     Configuration configuration;
   
     // Check endpoint
-    //@CrossOrigin(origins = "http://localhost:9000") // TODO: should be replaced by an environment variable
     @GetMapping("/info")
     public String info() {
         logger.info("info: Info endpoint called");
         return "OK";
     }
+  
+    // Get Exporter API key
+    @GetMapping("/exporter-api-key")
+    public String getExporterApiKey() {
+        logger.info("getExporterApiKey: GET exporter-api-key endpoint called");
+        String exporterApiKey = System.getenv("EXPORTER_API_KEY");
+        return exporterApiKey;
+    }
 
     // Get all SpecimenFeedback
-    //@CrossOrigin(origins = "http://localhost:9000")
     @GetMapping("/specimen-feedback")
     public List<SpecimenFeedback> getAllSpecimenFeedback() {
         logger.info("getAllSpecimenFeedback: GET specimen-feedback endpoint called");
@@ -38,14 +45,12 @@ public class SpecimenFeedbackController {
     }
 
     // Create a new SpecimenFeedback
-    //@CrossOrigin(origins = "http://localhost:9000")
     @PostMapping("/specimen-feedback")
     public SpecimenFeedback createSpecimenFeedback(@Valid @RequestBody SpecimenFeedback specimenFeedback) {
         logger.info("createSpecimenFeedback: POST specimen-feedback endpoint called");
         return specimenFeedbackRepository.save(specimenFeedback);
     }
     // Create multiple SpecimenFeedback
-    //@CrossOrigin(origins = "http://localhost:9000")
     @PostMapping("/multiple-specimen-feedback")
     public List<SpecimenFeedback> createSpecimenFeedback(@Valid @RequestBody SpecimenFeedbackDto specimenFeedbackDto) {
         logger.info("createSpecimenFeedback: POST multiple-specimen-feedback endpoint called");
@@ -57,7 +62,6 @@ public class SpecimenFeedbackController {
     }
 
     // Get a Single SpecimenFeedback
-    //@CrossOrigin(origins = "http://localhost:9000")
     @GetMapping("/specimen-feedback/{id}")
     public SpecimenFeedback getSpecimenFeedbackById(@PathVariable(value = "id") Long specimenFeedbackId) throws SpecimenFeedbackNotFoundException {
         logger.info("getSpecimenFeedbackById: GET specimen-feedback/{id} endpoint called");
