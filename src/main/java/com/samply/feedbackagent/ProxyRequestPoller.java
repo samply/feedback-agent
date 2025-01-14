@@ -1,7 +1,6 @@
 package com.samply.feedbackagent;
 
 import com.samply.feedbackagent.blaze.SpecimenExtensionUpdater;
-import com.samply.feedbackagent.controller.SpecimenFeedbackController;
 import com.samply.feedbackagent.model.SpecimenFeedback;
 import com.samply.feedbackagent.service.SpecimenFeedbackService;
 
@@ -288,15 +287,23 @@ public class ProxyRequestPoller extends Thread {
      * @return The ResponseEntity representing the response.
      */
     private ResponseEntity<String> sendBeamResult(BeamResult result) {
-        //final String request_uri = BEAM_PROXY_URI + "/v1/tasks/" + result.getTask() + "/results/" + FEEDBACK_AGENT_BEAM_ID;
-        final String request_uri = BEAM_PROXY_URI + "/v1/tasks/" + result.getTask() + "/results/" + FEEDBACK_HUB_BEAM_ID;
+        final String request_uri = BEAM_PROXY_URI + "/v1/tasks/" + result.getTask() + "/results/" + FEEDBACK_AGENT_BEAM_ID;
         logger.info("sendBeamResult: request_uri: " + request_uri);
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", feedbackAgentBeamAuthorization);
         headers.setContentType(MediaType.APPLICATION_JSON);
-        HttpEntity<Map<String, Object>> request = new HttpEntity<>(result.buildMap(), headers);
-        logger.info("sendBeamResult: result map: " + Util.jsonStringFomObject(result.buildMap()));
+        Map<String, Object> resultMap = result.buildMap();
+        logger.info("sendBeamResult: resultMap: " + Util.jsonStringFomObject(resultMap));
+        if (resultMap.containsKey("metadata"))
+            // If metadata is missing, the proxy will throw an invalid body error
+            resultMap.put("metadata", new ArrayList<String>());
+        if (resultMap.containsKey("from") && !FEEDBACK_AGENT_BEAM_ID.equals(resultMap.get("from").toString())) {
+            logger.warn("sendBeamResult: from field is incorrect: " + resultMap.get("from") + ". Changing to: " + FEEDBACK_AGENT_BEAM_ID);
+            resultMap.put("from", FEEDBACK_AGENT_BEAM_ID);
+        }
+
+        HttpEntity<Map<String, Object>> request = new HttpEntity<>(resultMap, headers);
 
         try {
             ResponseEntity<String> response = restTemplate.exchange(request_uri, HttpMethod.PUT, request, String.class);
