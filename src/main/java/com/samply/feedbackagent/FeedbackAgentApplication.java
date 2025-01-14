@@ -8,8 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-import com.samply.feedbackagent.controller.CorsConfig;
-
 @SpringBootApplication
 public class FeedbackAgentApplication {
     private static final Logger logger = LogManager.getLogger(FeedbackAgentApplication.class);

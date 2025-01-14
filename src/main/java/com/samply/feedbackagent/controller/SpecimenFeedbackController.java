@@ -1,6 +1,7 @@
 package com.samply.feedbackagent.controller;
 import com.samply.feedbackagent.model.SpecimenFeedbackDto;
 import com.samply.feedbackagent.repository.SpecimenFeedbackRepository;
+import com.samply.feedbackagent.Util;
 import com.samply.feedbackagent.exception.SpecimenFeedbackNotFoundException;
 import com.samply.feedbackagent.model.SpecimenFeedback;
 import com.samply.feedbackagent.service.Configuration;
@@ -56,6 +57,7 @@ public class SpecimenFeedbackController {
         logger.info("createSpecimenFeedback: POST multiple-specimen-feedback endpoint called");
         List<SpecimenFeedback> feedbackList = specimenFeedbackDto.getFeedbackList();
         logger.info("createSpecimenFeedback: feedbackList length: " + feedbackList.size());
+        logger.info("createSpecimenFeedback: feedbackList: " + Util.jsonStringFomObject(feedbackList));
         List<SpecimenFeedback> specimenFeedback = specimenFeedbackRepository.saveAll(feedbackList);
         logger.info("createSpecimenFeedback: returning");
         return specimenFeedback;

@@ -5,7 +5,7 @@ import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.samply.feedbackagent.controller.SpecimenFeedbackController;
+import com.samply.feedbackagent.Util;
 
 public class SpecimenFeedbackDto {
     private static final Logger logger = LogManager.getLogger(SpecimenFeedbackDto.class);
@@ -21,7 +21,7 @@ public class SpecimenFeedbackDto {
     }
 
     public List<SpecimenFeedback> getFeedbackList() {
-        logger.info("getFeedbackList: entered, this.feedbackList: " + this.feedbackList);
+        logger.info("getFeedbackList: entered, this.feedbackList: " + Util.jsonStringFomObject(this.feedbackList));
         return this.feedbackList;
     }
 
