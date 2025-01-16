@@ -35,7 +35,8 @@ public class ProxyRequestPoller extends Thread {
     private static final String FEEDBACK_AGENT_SECRET = System.getenv("FEEDBACK_AGENT_SECRET");
     private static final String FEEDBACK_AGENT_BEAM_ID = System.getenv("FEEDBACK_AGENT_BEAM_ID");
     private static final String feedbackAgentBeamAuthorization = "ApiKey " + FEEDBACK_AGENT_BEAM_ID + " " + FEEDBACK_AGENT_SECRET;
-
+    private Beam beam = new Beam(BEAM_PROXY_URI, FEEDBACK_AGENT_BEAM_ID, FEEDBACK_AGENT_SECRET);
+    
     /**
      * Constructs a new ProxyRequestPoller with the provided SpecimenFeedbackService.
      *
@@ -97,16 +98,16 @@ public class ProxyRequestPoller extends Thread {
             String requestId = bodyObject.getString("requestId");
             String accessCode = bodyObject.getString("accessCode");
             String key = bodyObject.getString("key");
+            logger.info("pollProxyWithRequest: propagating publication reference, requestId: " + requestId + ", accessCode: " + accessCode + ", key: " + key);
             propagatePublicationReference(requestId, accessCode, key);
 
-            // Let the Beam broker know that the task has been completed.
             logger.info("pollProxyWithRequest: build Beam result");
             BeamResult result = buildBeamResult(extractBeamResponseFrom(response), extractBeamResponseId(response));
             logger.info("pollProxyWithRequest: send Beam result");
-            ResponseEntity<String> claimResponse = sendBeamResult(result);
-            if (claimResponse == null)
+
+            // Let the Beam broker know that the task has been completed.
+            if (!beam.returnResult(result.getTask().toString(), result.buildMap()))
                 logger.warn("pollProxyWithRequest: Failed to send beam result");
-            logger.info("pollProxyWithRequest: claimResponse: " + claimResponse);
         } catch (Exception e) {
             logger.warn("pollProxyWithRequest: Exception occurred: " + Util.traceFromException(e));
             logger.warn("pollProxyWithRequest: BEAM_PROXY_URI: " + BEAM_PROXY_URI);
@@ -114,18 +115,21 @@ public class ProxyRequestPoller extends Thread {
             logger.warn("pollProxyWithRequest: feedbackAgentBeamAuthorization: " + feedbackAgentBeamAuthorization);
             logger.warn("pollProxyWithRequest: beamTodoUri: " + beamTodoUri);
         }
+        logger.info("pollProxyWithRequest: done");
     }
 
     private BeamResult buildBeamResult(String from, String id) {
         BeamResult result = new BeamResult();
-        // result.setFrom("app1.proxy2.broker");
-        result.setFrom(FEEDBACK_HUB_BEAM_ID);
+        result.setFrom(FEEDBACK_AGENT_BEAM_ID);
         List<String> to = new LinkedList<String>();
         to.add(from);
         result.setTo(to);
         result.setTask(UUID.fromString(id));
         result.setStatus("succeeded");
         result.setBody("PublicationReference obtained");
+        // If metadata is missing, the proxy will throw an invalid body error,
+        // so insert an empty list
+        result.setMetadata("[]");
 
         return result;
     }
@@ -195,7 +199,7 @@ public class ProxyRequestPoller extends Thread {
     private JSONObject extractResponseObjectFromBeamResponse(ResponseEntity<String> response) {
         String responseBody = response.getBody();
         // Extract list of tasks from response body
-        logger.info("extractResponseObjectFromBeamResponse: responseBody: " + responseBody);
+        //logger.info("extractResponseObjectFromBeamResponse: responseBody: " + responseBody);
         JSONArray responseArray = new JSONArray(responseBody);
         if (responseArray.length() <= 0) {
             logger.info("extractResponseObjectFromBeamResponse: No tasks found");
@@ -276,51 +280,6 @@ public class ProxyRequestPoller extends Thread {
             }
         } catch(Exception e) {
             logger.warn("getReferenceToken: Exception: " + Util.traceFromException(e));
-            return null;
-        }
-    }
-    
-    /**
-     * Sends a BeamResult to update the status of a proxy request.
-     *
-     * @param result The BeamResult to send.
-     * @return The ResponseEntity representing the response.
-     */
-    private ResponseEntity<String> sendBeamResult(BeamResult result) {
-        final String request_uri = BEAM_PROXY_URI + "/v1/tasks/" + result.getTask() + "/results/" + FEEDBACK_AGENT_BEAM_ID;
-        logger.info("sendBeamResult: request_uri: " + request_uri);
-        RestTemplate restTemplate = new RestTemplate();
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", feedbackAgentBeamAuthorization);
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        Map<String, Object> resultMap = result.buildMap();
-        logger.info("sendBeamResult: resultMap: " + Util.jsonStringFomObject(resultMap));
-        if (resultMap.containsKey("metadata"))
-            // If metadata is missing, the proxy will throw an invalid body error
-            resultMap.put("metadata", new ArrayList<String>());
-        if (resultMap.containsKey("from") && !FEEDBACK_AGENT_BEAM_ID.equals(resultMap.get("from").toString())) {
-            logger.warn("sendBeamResult: from field is incorrect: " + resultMap.get("from") + ". Changing to: " + FEEDBACK_AGENT_BEAM_ID);
-            resultMap.put("from", FEEDBACK_AGENT_BEAM_ID);
-        }
-
-        HttpEntity<Map<String, Object>> request = new HttpEntity<>(resultMap, headers);
-
-        try {
-            ResponseEntity<String> response = restTemplate.exchange(request_uri, HttpMethod.PUT, request, String.class);
-            if (response.getStatusCode() == HttpStatus.CREATED) {
-                return response;
-            } else {
-                logger.warn("Could not update beam task, status code: " + response.getStatusCode());
-                logger.warn("request_uri: " + request_uri);
-                logger.warn("feedbackAgentBeamAuthorization: " + feedbackAgentBeamAuthorization);
-                logger.warn("result: " + Util.jsonStringFomObject(result));
-                return null;
-            }
-        } catch (Exception e) {
-            logger.warn("Exception occurred: " + Util.traceFromException(e));
-            logger.warn("request_uri: " + request_uri);
-            logger.warn("feedbackAgentBeamAuthorization: " + feedbackAgentBeamAuthorization);
-            logger.warn("result: " + Util.jsonStringFomObject(result));
             return null;
         }
     }
