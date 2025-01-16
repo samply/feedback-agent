@@ -6,7 +6,6 @@ import com.samply.feedbackagent.service.SpecimenFeedbackService;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
@@ -30,11 +29,9 @@ public class ProxyRequestPoller extends Thread {
 
     private static final String FEEDBACK_HUB_URL = System.getenv("FEEDBACK_HUB_URL");
     private static final String BEAM_PROXY_URI = System.getenv("BEAM_PROXY_URI");
-    private static final String FEEDBACK_HUB_BEAM_ID = System.getenv("FEEDBACK_HUB_BEAM_ID");
     private static final String BLAZE_BASE_URL = System.getenv("BLAZE_BASE_URL");
     private static final String FEEDBACK_AGENT_SECRET = System.getenv("FEEDBACK_AGENT_SECRET");
     private static final String FEEDBACK_AGENT_BEAM_ID = System.getenv("FEEDBACK_AGENT_BEAM_ID");
-    private static final String feedbackAgentBeamAuthorization = "ApiKey " + FEEDBACK_AGENT_BEAM_ID + " " + FEEDBACK_AGENT_SECRET;
     private Beam beam = new Beam(BEAM_PROXY_URI, FEEDBACK_AGENT_BEAM_ID, FEEDBACK_AGENT_SECRET);
     
     /**
@@ -52,8 +49,6 @@ public class ProxyRequestPoller extends Thread {
      * processes them, and updates the relevant data.
      */
     public void run() {
-        // final String beamTodoUri = BEAM_PROXY_URI + "/v1/tasks?to=" + FEEDBACK_AGENT_BEAM_ID + "&wait_count=1&wait_time=10s&filter=todo";
-        // logger.info("run: beamTodoUri: " + beamTodoUri);
         while (!Thread.currentThread().isInterrupted()) {
             pollProxyWithRequest();
 
@@ -70,50 +65,31 @@ public class ProxyRequestPoller extends Thread {
      * Poll the proxy once with the request.
      */
     public void pollProxyWithRequest() {
-        final String beamTodoUri = BEAM_PROXY_URI + "/v1/tasks?to=" + FEEDBACK_AGENT_BEAM_ID + "&wait_count=1&wait_time=10s&filter=todo";
-        logger.info("pollProxyWithRequest: beamTodoUri: " + beamTodoUri);
+        logger.info("pollProxyWithRequest: entered");
         try {
-            HttpHeaders headers = new HttpHeaders();
-            headers.set("Authorization", feedbackAgentBeamAuthorization);
-            HttpEntity<String> request = new HttpEntity<>(null, headers);
-
-            // Pull any pending tasks from Beam
-            ResponseEntity<String> response = (new RestTemplate()).exchange(beamTodoUri, HttpMethod.GET, request, String.class);
-            logger.info("pollProxyWithRequest: response: " + response);
-            if (response.getStatusCode() != HttpStatus.OK && response.getStatusCode() != HttpStatus.PARTIAL_CONTENT) {
-                logger.warn("pollProxyWithRequest: Request failed with status code: " + response.getStatusCode());
-                return;
-            }
-
-            // If a task is found, extract the body from it
-            JSONObject bodyObject = extractBeamResponseBody(response);
-            if (bodyObject == null) {
+            JSONObject task = beam.listenForTask();
+            if (task == null) {
                 logger.info("pollProxyWithRequest: No tasks found");
                 return;
             }
-
-            // Assume that the body is a valid Feedback body, try to
+    
+            // Assuming that the body is a valid Feedback body, try to
             // extract the parameters needed for propagation, and
             // then perform the propagation.
-            String requestId = bodyObject.getString("requestId");
-            String accessCode = bodyObject.getString("accessCode");
-            String key = bodyObject.getString("key");
-            logger.info("pollProxyWithRequest: propagating publication reference, requestId: " + requestId + ", accessCode: " + accessCode + ", key: " + key);
-            propagatePublicationReference(requestId, accessCode, key);
+            JSONObject bodyObject = new JSONObject(task.getString("body"));
+            logger.info("pollProxyWithRequest: propagating publication reference, requestId: " + bodyObject.getString("requestId") + ", accessCode: " + bodyObject.getString("accessCode") + ", key: " + bodyObject.getString("key"));
+            propagatePublicationReference(bodyObject.getString("requestId"), bodyObject.getString("accessCode"), bodyObject.getString("key"));
 
+            // Build the body object that will be sent back to Beam
             logger.info("pollProxyWithRequest: build Beam result");
-            BeamResult result = buildBeamResult(extractBeamResponseFrom(response), extractBeamResponseId(response));
-            logger.info("pollProxyWithRequest: send Beam result");
+            BeamResult result = buildBeamResult(task.getString("from"), task.getString("id"));
 
             // Let the Beam broker know that the task has been completed.
+            logger.info("pollProxyWithRequest: send Beam result");
             if (!beam.returnResult(result.getTask().toString(), result.buildMap()))
                 logger.warn("pollProxyWithRequest: Failed to send beam result");
         } catch (Exception e) {
             logger.warn("pollProxyWithRequest: Exception occurred: " + Util.traceFromException(e));
-            logger.warn("pollProxyWithRequest: BEAM_PROXY_URI: " + BEAM_PROXY_URI);
-            logger.warn("pollProxyWithRequest: FEEDBACK_AGENT_BEAM_ID: " + FEEDBACK_AGENT_BEAM_ID);
-            logger.warn("pollProxyWithRequest: feedbackAgentBeamAuthorization: " + feedbackAgentBeamAuthorization);
-            logger.warn("pollProxyWithRequest: beamTodoUri: " + beamTodoUri);
         }
         logger.info("pollProxyWithRequest: done");
     }
@@ -132,82 +108,6 @@ public class ProxyRequestPoller extends Thread {
         result.setMetadata("[]");
 
         return result;
-    }
-
-    /**
-     * Extract the body of a Beam task from a response body and return it as a JSONObject.
-     * The body is expected to be a JSON string.
-     * Return null if no task was found.
-     * 
-     * @param responseBody The response body from Beam
-     * @return The body of the task as a JSONObject, or null if no task was found
-     */
-    private JSONObject extractBeamResponseBody(ResponseEntity<String> response) {
-        JSONObject responseObject = extractResponseObjectFromBeamResponse(response);
-        if (responseObject == null)
-            return null;
-        String body = responseObject.getString("body");
-        logger.info("extractBeamResponseBody: body: " + body);
-        JSONObject bodyObject = new JSONObject(body);
-
-        return bodyObject;
-    }
-
-    /**
-     * Extract the "from" field of a Beam task from a response body and return it as a JSONObject.
-     * The body is expected to be a JSON string.
-     * Return null if no task was found.
-     * 
-     * @param responseBody The response body from Beam
-     * @return The "from" field of the task as a JSONObject, or null if no task was found
-     */
-    private String extractBeamResponseFrom(ResponseEntity<String> response) {
-        JSONObject responseObject = extractResponseObjectFromBeamResponse(response);
-        if (responseObject == null)
-            return null;
-        String from = responseObject.getString("from");
-        logger.info("extractBeamResponseFrom: from: " + from);
-
-        return from;
-    }
-
-    /**
-     * Extract the "id" field of a Beam task from a response body and return it as a JSONObject.
-     * The body is expected to be a JSON string.
-     * Return null if no task was found.
-     * 
-     * @param responseBody The response body from Beam
-     * @return The "id" field of the task as a JSONObject, or null if no task was found
-     */
-    private String extractBeamResponseId(ResponseEntity<String> response) {
-        JSONObject responseObject = extractResponseObjectFromBeamResponse(response);
-        if (responseObject == null)
-            return null;
-        String id = responseObject.getString("id");
-        logger.info("extractBeamResponseFrom: id: " + id);
-
-        return id;
-    }
-
-    /**
-     * Extract and return the first response object from a Beam response body.
-     * Return null if no objects were found.
-     * 
-     * @param responseBody Beam response body
-     * @return The first response object as a JSONObject, or null if no objects were found
-     */
-    private JSONObject extractResponseObjectFromBeamResponse(ResponseEntity<String> response) {
-        String responseBody = response.getBody();
-        // Extract list of tasks from response body
-        //logger.info("extractResponseObjectFromBeamResponse: responseBody: " + responseBody);
-        JSONArray responseArray = new JSONArray(responseBody);
-        if (responseArray.length() <= 0) {
-            logger.info("extractResponseObjectFromBeamResponse: No tasks found");
-            return null;
-        }
-        JSONObject responseObject = responseArray.getJSONObject(0);
-
-        return responseObject;
     }
 
     /**
