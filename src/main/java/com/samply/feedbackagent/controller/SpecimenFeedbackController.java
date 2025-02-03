@@ -4,7 +4,6 @@ import com.samply.feedbackagent.repository.SpecimenFeedbackRepository;
 import com.samply.feedbackagent.Util;
 import com.samply.feedbackagent.exception.SpecimenFeedbackNotFoundException;
 import com.samply.feedbackagent.model.SpecimenFeedback;
-import com.samply.feedbackagent.service.Configuration;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -14,14 +13,14 @@ import jakarta.validation.Valid;
 import java.util.List;
 
 @RestController
-@CrossOrigin(origins = "${cors.allowed.origins}") // get from environment variable CORS_ALLOWED_ORIGINS
+//TODO: fix CORS
+@CrossOrigin(origins = "*", methods = {RequestMethod.GET, RequestMethod.POST}) // get from environment variable CORS_ALLOWED_ORIGINS
+//@CrossOrigin(origins = "{cors.allowed.origins}", methods = {RequestMethod.GET, RequestMethod.POST}) // get from environment variable CORS_ALLOWED_ORIGINS
 public class SpecimenFeedbackController {
     private static final Logger logger = LogManager.getLogger(SpecimenFeedbackController.class);
 
     @Autowired
     SpecimenFeedbackRepository specimenFeedbackRepository;
-    @Autowired
-    Configuration configuration;
   
     // Check endpoint
     @GetMapping("/info")
@@ -51,6 +50,7 @@ public class SpecimenFeedbackController {
         logger.info("createSpecimenFeedback: POST specimen-feedback endpoint called");
         return specimenFeedbackRepository.save(specimenFeedback);
     }
+
     // Create multiple SpecimenFeedback
     @PostMapping("/multiple-specimen-feedback")
     public List<SpecimenFeedback> createSpecimenFeedback(@Valid @RequestBody SpecimenFeedbackDto specimenFeedbackDto) {
