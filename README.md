@@ -8,14 +8,18 @@ a table called ```specimen_feedback```. Various parameters can be configured via
 variables, see the ```docker-compose.yml``` file for examples.
 
 ## Building for production
+The feedback agent is designed to be run within a [Bridgehead](https://github.com/samply/bridgehead).
+Before you start your Bridgehead, you will need to build a Docker container for this component:
+
 ``` code
+git clone https://github.com/samply/feedback-agent.git
+cd feedback-agent
 mvn clean install
 docker build -t samply/feedback-agent .
 ```
 
 ## Running locally
-The backend is designed to be run within a [Bridgehead](https://github.com/samply/bridgehead),
-but it can also be run locally if you want to test it.
+If you just want to try out an isolated feedback agent (not in a Bridgehead), you can run a test instance locally.
 
 First build the backend app by running
 ``` code
